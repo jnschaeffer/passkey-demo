@@ -8,10 +8,10 @@ import (
 	"github.com/jnschaeffer/passkey-demo/internal/types"
 )
 
-type Service struct{
-	sessions map[types.ID]types.Session
+type Service struct {
+	sessions    map[types.ID]types.Session
 	usersByName map[string]types.ID
-	usersByID map[types.ID]types.User
+	usersByID   map[types.ID]types.User
 	credentials map[types.ID]map[string]types.Credential
 }
 
@@ -22,9 +22,9 @@ func NewService() *Service {
 	credentialsMap := make(map[types.ID]map[string]types.Credential)
 
 	out := Service{
-		sessions: sessionMap,
+		sessions:    sessionMap,
 		usersByName: usersByNameMap,
-		usersByID: usersByIDMap,
+		usersByID:   usersByIDMap,
 		credentials: credentialsMap,
 	}
 
@@ -33,16 +33,16 @@ func NewService() *Service {
 
 func (s *Service) CreateSession(data *webauthn.SessionData) (types.Session, error) {
 	var (
-		id types.ID
+		id  types.ID
 		err error
 	)
-	
+
 	if id, err = types.NewID(); err != nil {
 		return types.Session{}, err
 	}
 
 	out := types.Session{
-		ID: id,
+		ID:       id,
 		WebAuthn: *data,
 	}
 
@@ -63,7 +63,7 @@ func (s *Service) GetSession(sessionID types.ID) (types.Session, error) {
 
 func (s *Service) CreateUser(name string) (types.User, error) {
 	var (
-		id types.ID
+		id  types.ID
 		err error
 	)
 
@@ -72,7 +72,7 @@ func (s *Service) CreateUser(name string) (types.User, error) {
 	}
 
 	out := types.User{
-		ID: id,
+		ID:   id,
 		Name: name,
 	}
 
@@ -119,11 +119,11 @@ func (s *Service) GetUserByID(id types.ID) (types.User, error) {
 func (s *Service) CreateCredential(userID types.ID, credential *webauthn.Credential) (types.Credential, error) {
 	var (
 		credentials map[string]types.Credential
-		ok bool
+		ok          bool
 	)
 
 	credentialID := base64.StdEncoding.EncodeToString(credential.ID)
-	
+
 	out := types.Credential{
 		WebAuthn: *credential,
 	}
@@ -140,11 +140,11 @@ func (s *Service) CreateCredential(userID types.ID, credential *webauthn.Credent
 
 func (s *Service) DiscoverCredential(rawCredID, rawUserID []byte) (webauthn.User, error) {
 	var (
-		userID types.ID
-		err error
+		userID      types.ID
+		err         error
 		credentials map[string]types.Credential
-		ok bool
-		user types.User
+		ok          bool
+		user        types.User
 	)
 
 	if userID, err = types.NewIDFromBytes(rawUserID); err != nil {
@@ -156,7 +156,7 @@ func (s *Service) DiscoverCredential(rawCredID, rawUserID []byte) (webauthn.User
 	}
 
 	credentialID := base64.StdEncoding.EncodeToString(rawCredID)
-		
+
 	if _, ok = credentials[credentialID]; !ok {
 		return &types.User{}, errors.New("credential not found")
 	}

@@ -28,7 +28,7 @@ func NewIDFromBytes(b []byte) (ID, error) {
 
 func DecodeID(b64Bytes string) (ID, error) {
 	var (
-		b []byte
+		b   []byte
 		err error
 	)
 
@@ -40,8 +40,8 @@ func DecodeID(b64Bytes string) (ID, error) {
 }
 
 type User struct {
-	ID ID
-	Name string
+	ID          ID
+	Name        string
 	Credentials []Credential
 }
 
@@ -60,7 +60,7 @@ func (u *User) WebAuthnDisplayName() string {
 func (u *User) WebAuthnCredentials() []webauthn.Credential {
 	out := make([]webauthn.Credential, len(u.Credentials))
 
-	for _, c := range u.Credentials{
+	for _, c := range u.Credentials {
 		out = append(out, c.WebAuthn)
 	}
 
@@ -68,7 +68,7 @@ func (u *User) WebAuthnCredentials() []webauthn.Credential {
 }
 
 type Session struct {
-	ID ID
+	ID       ID
 	WebAuthn webauthn.SessionData
 }
 
