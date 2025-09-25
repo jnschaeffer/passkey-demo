@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/jnschaeffer/passkey-demo/internal/storage"
 	"github.com/jnschaeffer/passkey-demo/internal/webauthn"
 )
@@ -30,6 +31,7 @@ func main() {
 		webauthn.WithRPDisplayName("Experimental Systems"),
 		webauthn.WithRPID("localhost"),
 		webauthn.WithRPOrigins([]string{"http://localhost"}),
+		webauthn.WithConveyancePreference(protocol.PreferDirectAttestation),
 		webauthn.WithStorage(storageSvc),
 	}
 

@@ -18,6 +18,7 @@ type serviceConfig struct {
 	rpDisplayName string
 	rpID string
 	rpOrigins []string
+	conveyancePreference protocol.ConveyancePreference
 	storage *storage.Service
 }
 
@@ -47,6 +48,11 @@ func WithStorage(svc *storage.Service) Option {
 	}
 }
 
+func WithConveyancePreference(pref protocol.ConveyancePreference) Option {
+	return func(cfg *serviceConfig) {
+		cfg.conveyancePreference = pref
+	}
+}
 
 type loginResponse struct {
 	Username string `json:"username"`
@@ -72,10 +78,11 @@ func NewService(opts ...Option) (*Service, error) {
 		RPDisplayName: cfg.rpDisplayName,
 		RPID: cfg.rpID,
 		RPOrigins: cfg.rpOrigins,
+		AttestationPreference: cfg.conveyancePreference,
 	}
 
 	if wauth, err = webauthn.New(&config); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	svc := Service{
