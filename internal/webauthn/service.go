@@ -15,39 +15,45 @@ import (
 const sessionCookieName = "ws"
 
 type serviceConfig struct {
-	rpDisplayName string
-	rpID string
-	rpOrigins []string
+	rpDisplayName        string
+	rpID                 string
+	rpOrigins            []string
 	conveyancePreference protocol.ConveyancePreference
-	storage *storage.Service
+	storage              *storage.Service
 }
 
+// Option represents a configuration option for a WebAuthn service.
 type Option func(*serviceConfig)
 
+// WithRPDisplay name sets the display name for the Relying Party.
 func WithRPDisplayName(name string) Option {
 	return func(cfg *serviceConfig) {
 		cfg.rpDisplayName = name
 	}
 }
 
+// WithRPID sets the ID for the Relying Party. This should be the domain name from which the WebAuthn service is served.
 func WithRPID(id string) Option {
 	return func(cfg *serviceConfig) {
 		cfg.rpID = id
 	}
 }
 
+// WithRPOrigins sets the allowed origins for the Relying Party.
 func WithRPOrigins(origins []string) Option {
 	return func(cfg *serviceConfig) {
 		cfg.rpOrigins = origins
 	}
 }
 
+// WithStorage sets the storage backend for the WebAuthn service. This option is required.
 func WithStorage(svc *storage.Service) Option {
 	return func(cfg *serviceConfig) {
 		cfg.storage = svc
 	}
 }
 
+// WithConveyancePreference sets the attestation conveyance preference for authenticators.
 func WithConveyancePreference(pref protocol.ConveyancePreference) Option {
 	return func(cfg *serviceConfig) {
 		cfg.conveyancePreference = pref
@@ -58,15 +64,17 @@ type loginResponse struct {
 	Username string `json:"username"`
 }
 
+// Service represents a WebAuthn Relying Party service.
 type Service struct {
-	w *webauthn.WebAuthn
+	w       *webauthn.WebAuthn
 	storage *storage.Service
 }
 
+// NewService creates a new Service with the given options.
 func NewService(opts ...Option) (*Service, error) {
 	var (
-		err error
-		cfg serviceConfig
+		err   error
+		cfg   serviceConfig
 		wauth *webauthn.WebAuthn
 	)
 
@@ -75,9 +83,9 @@ func NewService(opts ...Option) (*Service, error) {
 	}
 
 	config := webauthn.Config{
-		RPDisplayName: cfg.rpDisplayName,
-		RPID: cfg.rpID,
-		RPOrigins: cfg.rpOrigins,
+		RPDisplayName:         cfg.rpDisplayName,
+		RPID:                  cfg.rpID,
+		RPOrigins:             cfg.rpOrigins,
 		AttestationPreference: cfg.conveyancePreference,
 	}
 
@@ -86,20 +94,21 @@ func NewService(opts ...Option) (*Service, error) {
 	}
 
 	svc := Service{
-		w: wauth,
+		w:       wauth,
 		storage: cfg.storage,
 	}
 
 	return &svc, nil
 }
 
+// HandleRegistrationBegin handles HTTP requests to begin a WebAuthn registration ceremony.
 func (s *Service) HandleRegistrationBegin(rw http.ResponseWriter, r *http.Request) {
 	var (
-		err error
-		creation *protocol.CredentialCreation
+		err         error
+		creation    *protocol.CredentialCreation
 		sessionData *webauthn.SessionData
-		session types.Session
-		user types.User
+		session     types.Session
+		user        types.User
 	)
 
 	username := r.PathValue("username")
@@ -126,12 +135,12 @@ func (s *Service) HandleRegistrationBegin(rw http.ResponseWriter, r *http.Reques
 	rw.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	sessionID := base64.StdEncoding.EncodeToString(session.ID[:])
-	
+
 	cookie := http.Cookie{
-		Name: sessionCookieName,
-		Value: sessionID,
+		Name:    sessionCookieName,
+		Value:   sessionID,
 		Expires: session.WebAuthn.Expires,
-		Path: "/",
+		Path:    "/",
 	}
 
 	http.SetCookie(rw, &cookie)
@@ -144,14 +153,15 @@ func (s *Service) HandleRegistrationBegin(rw http.ResponseWriter, r *http.Reques
 	}
 }
 
+// HandleRegistrationFinish handles HTTP requests to finish a WebAuthn registration ceremony.
 func (s *Service) HandleRegistrationFinish(rw http.ResponseWriter, r *http.Request) {
 	var (
-		err error
-		session types.Session
-		user types.User
+		err           error
+		session       types.Session
+		user          types.User
 		sessionCookie *http.Cookie
-		sessionID types.ID
-		credential *webauthn.Credential
+		sessionID     types.ID
+		credential    *webauthn.Credential
 	)
 
 	username := r.PathValue("username")
@@ -195,12 +205,13 @@ func (s *Service) HandleRegistrationFinish(rw http.ResponseWriter, r *http.Reque
 	rw.WriteHeader(http.StatusOK)
 }
 
+// HandleAuthenticationBegin handles HTTP requests to begin a WebAuthn authentication ceremony.
 func (s *Service) HandleAuthenticationBegin(rw http.ResponseWriter, r *http.Request) {
 	var (
-		err error
-		assertion *protocol.CredentialAssertion
+		err         error
+		assertion   *protocol.CredentialAssertion
 		sessionData *webauthn.SessionData
-		session types.Session
+		session     types.Session
 	)
 
 	if assertion, sessionData, err = s.w.BeginDiscoverableLogin(); err != nil {
@@ -216,12 +227,12 @@ func (s *Service) HandleAuthenticationBegin(rw http.ResponseWriter, r *http.Requ
 	rw.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	sessionID := base64.StdEncoding.EncodeToString(session.ID[:])
-	
+
 	cookie := http.Cookie{
-		Name: sessionCookieName,
-		Value: sessionID,
+		Name:    sessionCookieName,
+		Value:   sessionID,
 		Expires: session.WebAuthn.Expires,
-		Path: "/",
+		Path:    "/",
 	}
 
 	http.SetCookie(rw, &cookie)
@@ -231,15 +242,16 @@ func (s *Service) HandleAuthenticationBegin(rw http.ResponseWriter, r *http.Requ
 	encoder.Encode(assertion)
 }
 
+// HandleAuthenticationFinish handles HTTP requests to finish a WebAuthn authentication ceremony.
 func (s *Service) HandleAuthenticationFinish(rw http.ResponseWriter, r *http.Request) {
 	var (
-		err error 
+		err           error
 		sessionCookie *http.Cookie
-		sessionID types.ID
-		session types.Session
-		user webauthn.User
+		sessionID     types.ID
+		session       types.Session
+		user          webauthn.User
 	)
-	
+
 	if sessionCookie, err = r.Cookie(sessionCookieName); err != nil {
 		log.Printf("error getting cookie: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)

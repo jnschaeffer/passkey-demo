@@ -8,6 +8,7 @@ import (
 	"github.com/jnschaeffer/passkey-demo/internal/types"
 )
 
+// Service represents a storage backend for a WebAuthn service.
 type Service struct {
 	sessions    map[types.ID]types.Session
 	usersByName map[string]types.ID
@@ -15,6 +16,7 @@ type Service struct {
 	credentials map[types.ID]map[string]types.Credential
 }
 
+// NewService creates a new storage service.
 func NewService() *Service {
 	sessionMap := make(map[types.ID]types.Session)
 	usersByNameMap := make(map[string]types.ID)
@@ -31,6 +33,7 @@ func NewService() *Service {
 	return &out
 }
 
+// CreateSession creates a new session in the storage backend.
 func (s *Service) CreateSession(data *webauthn.SessionData) (types.Session, error) {
 	var (
 		id  types.ID
@@ -51,6 +54,7 @@ func (s *Service) CreateSession(data *webauthn.SessionData) (types.Session, erro
 	return out, nil
 }
 
+// GetSession gets an existing session with the given ID from the storage backend.
 func (s *Service) GetSession(sessionID types.ID) (types.Session, error) {
 	session, ok := s.sessions[sessionID]
 
@@ -61,6 +65,7 @@ func (s *Service) GetSession(sessionID types.ID) (types.Session, error) {
 	return session, nil
 }
 
+// CreateUser creates a user with the given user data.
 func (s *Service) CreateUser(name string) (types.User, error) {
 	var (
 		id  types.ID
@@ -82,6 +87,7 @@ func (s *Service) CreateUser(name string) (types.User, error) {
 	return out, nil
 }
 
+// GetUserByName gets a user with the given name.
 func (s *Service) GetUserByName(name string) (types.User, error) {
 	id, ok := s.usersByName[name]
 
@@ -98,6 +104,7 @@ func (s *Service) GetUserByName(name string) (types.User, error) {
 	return user, nil
 }
 
+// GetUserByID gets a user with the given ID.
 func (s *Service) GetUserByID(id types.ID) (types.User, error) {
 	user, ok := s.usersByID[id]
 
@@ -116,6 +123,7 @@ func (s *Service) GetUserByID(id types.ID) (types.User, error) {
 	return user, nil
 }
 
+// CreateCredential creates a credential bound to the user with the given ID.
 func (s *Service) CreateCredential(userID types.ID, credential *webauthn.Credential) (types.Credential, error) {
 	var (
 		credentials map[string]types.Credential
@@ -138,6 +146,7 @@ func (s *Service) CreateCredential(userID types.ID, credential *webauthn.Credent
 	return out, nil
 }
 
+// DiscoverCredential finds a user for an associated credential given the raw credential and user IDs.
 func (s *Service) DiscoverCredential(rawCredID, rawUserID []byte) (webauthn.User, error) {
 	var (
 		userID      types.ID

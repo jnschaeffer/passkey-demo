@@ -27,6 +27,7 @@ func main() {
 
 	storageSvc = storage.NewService()
 
+	// TODO: Make these configurabl with env vars or similar.
 	opts := []webauthn.Option{
 		webauthn.WithRPDisplayName("Experimental Systems"),
 		webauthn.WithRPID("localhost"),
