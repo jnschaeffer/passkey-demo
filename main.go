@@ -27,11 +27,11 @@ func main() {
 
 	storageSvc = storage.NewService()
 
-	// TODO: Make these configurabl with env vars or similar.
+	// TODO: Make these configurable with env vars or similar.
 	opts := []webauthn.Option{
 		webauthn.WithRPDisplayName("Experimental Systems"),
 		webauthn.WithRPID("localhost"),
-		webauthn.WithRPOrigins([]string{"http://localhost"}),
+		webauthn.WithRPOrigins([]string{"http://localhost:8080"}),
 		webauthn.WithConveyancePreference(protocol.PreferDirectAttestation),
 		webauthn.WithStorage(storageSvc),
 	}
@@ -51,6 +51,6 @@ func main() {
 	http.Handle("GET /{$}", http.FileServer(http.FS(htmlFS)))
 	http.Handle("GET /js/", http.FileServer(http.FS(jsFS)))
 
-	// Simple static webserver:
-	log.Fatal(http.ListenAndServe(":80", nil))
+	// Simple static webserver
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

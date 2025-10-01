@@ -1,5 +1,5 @@
 async function registerCredential(username) {
-    const url = `http://localhost/webauthn/${username}/register/start`;
+    const url = `http://localhost:8080/webauthn/${username}/register/start`;
 
     let beginResponse = await fetch(url);
 
@@ -14,7 +14,7 @@ async function registerCredential(username) {
     let credentialInfo = await window.navigator.credentials.create({publicKey: options});
 
     let finishResponse = await fetch(
-        `http://localhost/webauthn/${username}/register/finish`,
+        `http://localhost:8080/webauthn/${username}/register/finish`,
         {
             method: "POST",
             body: JSON.stringify(credentialInfo.toJSON()),

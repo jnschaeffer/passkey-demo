@@ -1,5 +1,5 @@
 async function login() {
-    const url = 'http://localhost/webauthn/login/begin';
+    const url = 'http://localhost:8080/webauthn/login/begin';
 
     let beginResponse = await fetch(url);
 
@@ -14,7 +14,7 @@ async function login() {
     let credentialInfo = await window.navigator.credentials.get({publicKey: options});
 
     let finishResponse = await fetch(
-        `http://localhost/webauthn/login/finish`,
+        `http://localhost:8080/webauthn/login/finish`,
         {
             method: "POST",
             body: JSON.stringify(credentialInfo.toJSON()),
